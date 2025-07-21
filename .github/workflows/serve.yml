@@ -8,8 +8,8 @@ on:
 jobs:
   serve:
     runs-on: ubuntu-latest
-    steps:
 
+    steps:
       # 1. Checkout your code (index.html, fV9o.php)
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -20,9 +20,10 @@ jobs:
         with:
           php-version: '8.1'
 
-      # 3. Prepare cache directory for your PHP script
-      - name: Create coinimp-cache
+      # 3. Clean and recreate the cache directory
+      - name: Clean CoinImp cache directory
         run: |
+          rm -rf coinimp-cache
           mkdir -p coinimp-cache
           chmod 777 coinimp-cache
 
@@ -30,10 +31,10 @@ jobs:
       - name: Setup cloudflared
         uses: AnimMouse/setup-cloudflared@v2
 
-      # 5. Serve your site and expose it publicly
+      # 5. Start PHP server and open Tunnel
       - name: Serve & Tunnel
         run: |
-          # start PHP in background on port 8080
+          # start PHP built-in server in the background
           php -S 0.0.0.0:8080 -t . &
-          # open a free TryCloudflare tunnel pointing at your PHP server
+          # open a free quick Tunnel; logs the public URL
           cloudflared tunnel --url http://localhost:8080
