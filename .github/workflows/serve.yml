@@ -1,0 +1,39 @@
+name: Preview PHP Site via Cloudflare Tunnel
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  serve:
+    runs-on: ubuntu-latest
+    steps:
+
+      # 1. Checkout your code (index.html, fV9o.php)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Install PHP
+      - name: Setup PHP 8.1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      # 3. Prepare cache directory for your PHP script
+      - name: Create coinimp-cache
+        run: |
+          mkdir -p coinimp-cache
+          chmod 777 coinimp-cache
+
+      # 4. Install Cloudflared
+      - name: Setup cloudflared
+        uses: AnimMouse/setup-cloudflared@v2
+
+      # 5. Serve your site and expose it publicly
+      - name: Serve & Tunnel
+        run: |
+          # start PHP in background on port 8080
+          php -S 0.0.0.0:8080 -t . &
+          # open a free TryCloudflare tunnel pointing at your PHP server
+          cloudflared tunnel --url http://localhost:8080
